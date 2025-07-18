@@ -1,11 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { Chat } from "../../generated/prisma";
 
 @Injectable()
 export class ChatService {
     constructor(private prisma: PrismaService) {}
 
-    async createPrivateChat(data: { userId1: string, userId2: string }) {
+    async userChats( userId: string ): Promise<Chat[]> {
+        return this.prisma.chat.findMany({
+            where: {
+                members: {
+                    some: {
+                        userId: userId
+                    }
+                }
+            },
+            include: {
+                messages: {
+                    include: {
+                        content: true
+                    }
+                }
+            }
+        })
+    }
+
+    async createPrivateChat(data: { userId1: string, userId2: string }): Promise<Chat | null> {
         const user = await this.prisma.user.findUnique({
             where: {
                 id: data.userId2,
