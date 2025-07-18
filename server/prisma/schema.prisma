@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid(1))
+  username String
+  phone    String @unique
+
+  membership ChatMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model ChatMember {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId String
+
+  role ChatRole @default(MEMBER)
+
+  @@id([userId, chatId])
+  @@map("chat_members")
+}
+
+model Chat {
+  id    String @id @default(cuid(1))
+  title String @default("Chat")
+
+  type    ChatType     @default(PRIVATE)
+  members ChatMember[]
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chats")
+}
+
+model MessageContent {
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId String
+
+  text String?
+
+  @@id(messageId)
+  @@map("messages_content")
+}
+
+model Message {
+  id String @id @default(cuid(1))
+
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId String
+
+  content MessageContent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("messages")
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+}
+
+enum ChatRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
