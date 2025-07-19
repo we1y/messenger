@@ -9,9 +9,10 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(cuid(1))
+  id       String  @id @default(cuid(1))
   username String
-  phone    String @unique
+  phone    String  @unique
+  avatar   String?
 
   membership ChatMember[]
 
